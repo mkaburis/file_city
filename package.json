@@ -1,0 +1,21 @@
+{
+  "name": "filecity",
+  "version": "1.0.0",
+  "description": "Visual file exploration with Electron and JavaScript",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Mihail Kaburis",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^4.0.6",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.16.0"
+  },
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "touch": "^3.1.0"
+  }
+}
