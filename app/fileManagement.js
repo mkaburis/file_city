@@ -35,9 +35,10 @@ console.log(dialog);
 // Gets list of file and directory names
 function getFileList() {
   // eslint-disable-next-line no-undef
-  fs.readdirSync(__dirname).forEach(file => {
-    console.log(file);
-  });
+  const fileList = fs.readdirSync(currentWorkingDirectory); // .forEach(file => {
+  //   console.log(file);
+  // });
+  return fileList;
 }
 
 
@@ -180,3 +181,7 @@ function fileInfo(fileName) {
   const statObj = fs.statSync(filePath)
   window.alert(statObj.size);
 }
+
+module.exports = {
+  getFileList
+};
