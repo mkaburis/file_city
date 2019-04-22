@@ -5,16 +5,58 @@
 		<meta charset="utf-8">
 		<title>fileCity v0.0.1</title>
 		<style>
-			body {margin: 0;}
-			canvas {width: 100%; height: 100%}
+			/* body {margin: 0; background-color:black!important} */
+			body {margin: 0}
+			canvas {width: 100%; height: 90%}
+
 		</style>
-		<script src = './app/phaser.js'></script>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 	</head>
 	<body>
-		<script type="text/javascript" src="./game.js"></script>
-		<script>
-			const {remote} = require ("electron");
-		</script>
+		<div id="game-container" class="col">
+		
+		</div>
+		<div id="file-container"class="container mt-5">
+				<table class="table table-hover table-dark">
+						<!-- <thead>
+						  <tr>
+							<th scope="col">#</th>
+							<th scope="col">First</th>
+							<th scope="col">Last</th>
+							<th scope="col">Handle</th>
+						  </tr>
+						</thead> -->
+						<tbody>
+						  <tr>
+							<th scope="row">Exploring: </th>
+							<td id="dir" colspan="2"></td>
+						  </tr>
+						  <tr>
+							<th scope="row">Current: </th>
+							<td id="curr" colspan="2"></td>
+							</tr>
+						<tr>
+							<th scope="row">Construct: </th>
+							<td><input type="text" class="form-controls" id="name" placeholder="File/Directory Name"></td>
+							<td> <button type="button" class="btn btn-success mx-2">Create New File</button></td>
+						  </tr>
+						  <tr>
+							<th scope="row">3</th>
+							<td colspan="2">Larry the Bird</td>
+						  </tr>
+						</tbody>
+					  </table>
+					  <div class = row>
+					  <button type="button" class="btn btn-danger mx-2">Delete File</button>
+					</div>
+		</div>	
+		<script> const {remote} = require ("electron"); </script>
+		<script src = './app/phaser.js'></script>
 		<script type="text/javascript" src="./app/fileManagement.js"></script>
+		<script type="text/javascript" src="./game.js"></script>
+		
 	</body>
 </html>

@@ -1,4 +1,27 @@
-module.import = { getFileList: './app/fileManagement' }
+
+// module.import = { getFileList: 'app/fileManagement.js' }
+// const {getFileList, fileInfo} = require('./app/fileManagement.js');
+                  
+// const { dialog } = require('electron').remote;
+const { ipcRenderer } = require('electron');
+
+function formatBytes(bytes, decimals = 2) {
+  if (bytes === 0) return '0 Bytes';
+
+  const kb = 1024;
+  let dm;
+
+  if (decimals < 0)
+      dm = 0;
+  else 
+    dm = decimals
+
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+  const i = Math.floor(Math.log(bytes) / Math.log(kb));
+
+  return parseFloat((bytes / Math.pow(kb, i)).toFixed(dm)) + ' ' + sizes[i];
+}
 
 const config = {
     type: Phaser.AUTO, // Which renderer to use
@@ -35,45 +58,53 @@ const config = {
   let map;
   let tileset;
   let layer;
-  let buildLayer;
+  let overlapTriggered = false;
+
+  let timer = setInterval(()=> {
+    overlapTriggered = false;
+  }, 3000)
+  
 
   let cursors;
   let sprite;
   let debugGraphics;
   let showDebug = false;
   let helpText;
-  let building;
-  let currentDataString;
+  let building =[];
+  let fileData = [];
+
 
 function create() {
-  // When loading a CSV map, make sure to specify the tileWidth and tileHeight!
+  //Load in the tilemap, cityCSV
     map = this.make.tilemap({ key: "citymap", tileWidth: 8, tileHeight: 8});
     tileset = map.addTilesetImage("tiles");
     layer = map.createDynamicLayer(0, tileset, 0, 0); // layer index, tileset, x, y
-    sprite = this.physics.add.sprite(10, 130, 'car');
+    sprite = this.physics.add.sprite(25, 130, 'car');
+    changeDir = false;
+ 
     
     // Scale the car sprite down
     sprite.scaleX = 0.5
     sprite.scaleY = 0.5
 
-
-
-
+    // Set up camera to follow car sprite
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     this.cameras.main.startFollow(sprite);
 
-    this.cameras.main.setZoom(3);
+
+    // this.cameras.main.setZoom(2);
     // Set collision bounds at edge of our city world
     sprite.setCollideWorldBounds(true);
 
-
-
+    //////////////////////////////////////////
     // Load in Files and Directories for UI //
-    ////////////////////
+    //////////////////////////////////////////
     let fileContents = getFileList();
 
     let x = 104, y = 80
     let count = 0
+    let i = 0;
+
     fileContents.forEach(element => {
       if (count === 4)
       {
@@ -81,58 +112,96 @@ function create() {
         x+= 112
         y = 80
       }
-      // console.log(element);
-      let str = element
-      if (str.indexOf('.') !== -1)
+      let fileObj = fileInfo(element);
+
+      if(fileObj.isFile())
       {
-        building = this.add.sprite(x, y, 'fileBuilding')
+        building[i] = this.add.sprite(x, y, 'fileBuilding').setInteractive()
+        let absolute = path.resolve(element)
+        fileData[i] = {
+          id: i,
+          name: element,
+          size: fileObj.size,
+          cTime: fileObj.birthtime,
+          modTime: fileObj.mtime,
+          absPath: absolute };
+        console.log(fileData[i]);
         
       }
-      else
-        building = this.add.sprite(x, y, 'dirBuilding')
+      else {
+        building[i] = this.add.sprite(x, y, 'dirBuilding').setInteractive()
+        let absolute = path.resolve(element)
+        fileData[i] = {
+          id: i,
+          name: element,
+          size: fileObj.size,
+          cTime: fileObj.birthtime,
+          modTime: fileObj.mtime,
+          absPath: absolute };
+        console.log(fileData[i]);
+      }
 
-      
+      this.add.text(x-25, y-10, formatBytes(fileObj.size), {
+        fontFamily: 'Arial',
+        fontSize: '10px',
+        padding: { x: 5, y: 5 },
+        fill: '#ffffff',
+        backgroundColor: '#000000',
+        visible: false
+      });
+
+      this.physics.add.existing(building[i], true);
+      // this.physics.add.collider(building, sprite);
+      this.physics.add.overlap(sprite, building[i], getCurrent);
       y+=90;
-      count++
+      count++;
+      i++;
     });
 
+    this.input.on('gameobjectover', function (pointer, gameObject) {
+      
+      gameObject.setTint(0xff0000);
+  });
 
-    const helloButton = this.add.text(100, 100, 'Hello Phaser!', { fill: '#0f0' });
-    helloButton.setInteractive();
+  this.input.on('gameobjectout', function (pointer, gameObject) {
 
-    helloButton.on('pointerover', () => { console.log('pointerover'); });
-    // COLUMN A
-    
-    // building = this.add.sprite(104, 170, 'dirBuilding')
-    // this.building.setCollideWorldBounds(true);
-    // this.add.sprite(104, 260, 'dirBuilding');
-    // this.add.sprite(104, 350, 'fileBuilding');;
+      gameObject.clearTint();
 
-    // // COLUMN B
-    // this.add.sprite(216, 80, 'fileBuilding')
-    // this.add.sprite(216, 170, 'fileBuilding')
-    // this.add.sprite(216, 260, 'dirBuilding');
-    // this.add.sprite(216, 350, 'fileBuilding');
+  });
 
-    // // COLUMN B
-    // this.add.sprite(328, 80, 'fileBuilding')
-    // this.add.sprite(328, 170, 'dirBuilding')
-    // this.add.sprite(328, 260, 'dirBuilding');
-    // this.add.sprite(328, 350, 'fileBuilding');
-
-
-
-
+    // Set collision spaces on the map!
     map.setCollisionBetween(3, 7);
     map.setCollisionBetween(11, 15);
     map.setCollisionBetween(19, 23);
-    map.setCollisionBetween(27, 31);
+    map.setCollision(27);
+    map.setCollisionBetween(29, 31);
     map.setCollisionBetween(35, 39);
     map.setCollisionBetween(126, 126);
-    map.setCollisionBetween(134, 134);
+    map.setCollision(134);
 
-    //Set up collission with our layer
-    
+    // Railroad tracks go up a directory!
+    layer.setTileIndexCallback(127, () => {
+      changeDirectory('../');
+      this.scene.restart();
+    }, this);
+
+
+    layer.setTileIndexCallback(28, () => {
+      clearInterval(timer);
+      if(changeDir === false && overlapTriggered === false) {
+        overlapTriggered = true;
+        selectDirectory();
+        // var promise1 = new Promise(function(resolve, reject) {
+          // let x = selectDirectory()
+          // resolve(x);
+        // });
+        // promise1.then(function(dir) {
+        //   console.log(dir)
+        // });
+      }
+    } );
+
+    //Set up collission with our map layer
     this.physics.add.collider(sprite, layer);
 
     this.anims.create({
@@ -164,13 +233,17 @@ function create() {
         showDebug = !showDebug;
         drawDebug();
     });
+
+ 
     
 }
 
 function update() {
-
-  var worldPoint = this.input.activePointer.positionToCamera(this.cameras.main);
-    var tile = map.getTileAtWorldXY(worldPoint.x, worldPoint.y);
+  if(changeDir === true) {
+    overlapTriggered = false; 
+    this.scene.restart();
+  }
+  // this.physics.add.collider(sprite, building, openFileMenu);
 
   sprite.setVelocity(0);
 
@@ -182,7 +255,6 @@ function update() {
   else if (cursors.right.isDown)
   {
       sprite.setAngularVelocity(200);
-      console.log(getFileList());
   }
 
   else if (cursors.up.isDown)
@@ -222,4 +294,71 @@ function getHelpMessage ()
 {
     return 'Arrow keys to move.' +
         '\nPress "C" to toggle debug visuals: ' + (showDebug ? 'on' : 'off');
+}
+
+function getCurrent(sprite, building) {
+  let x;
+
+  var promise = new Promise(function (resolve, reject) {
+    // do a thing, possibly async, then…
+    // COLUMN A
+    if (sprite.x > 95 && sprite.x < 116 && sprite.y > 108.5 && sprite.y < 115)
+      x = 0
+    if (sprite.x > 95 && sprite.x < 116 && sprite.y > 195 && sprite.y < 205)
+      x = 1
+    if (sprite.x > 95 && sprite.x < 116 && sprite.y > 292 && sprite.y < 302)
+      x = 2
+    if (sprite.x > 95 && sprite.x < 116 && sprite.y > 318 && sprite.y < 328)
+      x = 3
+
+    // COLUMN B
+    if (sprite.x > 205 && sprite.x < 226 && sprite.y > 108.5 && sprite.y < 115)
+      x = 4
+    if (sprite.x > 205 && sprite.x < 226 && sprite.y > 195 && sprite.y < 205)
+      x = 5
+    if (sprite.x > 205 && sprite.x < 226 && sprite.y > 292 && sprite.y < 302)
+      x = 6
+    if (sprite.x > 205 && sprite.x < 226 && sprite.y > 318 && sprite.y < 328)
+      x = 7
+
+    // COLUMN C
+    if (sprite.x > 315 && sprite.x < 336 && sprite.y > 108.5 && sprite.y < 115)
+      x = 8
+    if (sprite.x > 315 && sprite.x < 336 && sprite.y > 195 && sprite.y < 205)
+      x = 9
+    if (sprite.x > 315 && sprite.x < 336 && sprite.y > 292 && sprite.y < 302)
+      x = 10
+    if (sprite.x > 315 && sprite.x < 336 && sprite.y > 318 && sprite.y < 328)
+      x = 11
+
+    // COLUMN D
+    if (sprite.x > 425 && sprite.x < 446 && sprite.y > 108.5 && sprite.y < 115)
+      x = 12
+    if (sprite.x > 425 && sprite.x < 446 && sprite.y > 195 && sprite.y < 205)
+      x = 13
+    if (sprite.x > 425 && sprite.x < 446 && sprite.y > 292 && sprite.y < 302)
+      x = 14
+    if (sprite.x > 425 && sprite.x < 446 && sprite.y > 318 && sprite.y < 328)
+      x = 15
+
+    // COLUMN E
+    if (sprite.x > 535 && sprite.x < 556 && sprite.y > 108.5 && sprite.y < 115)
+      x = 16
+    if (sprite.x > 535 && sprite.x < 556 && sprite.y > 195 && sprite.y < 205)
+      x = 17
+    if (sprite.x > 535 && sprite.x < 556 && sprite.y > 292 && sprite.y < 302)
+      x = 18
+    if (sprite.x > 535 && sprite.x < 556 && sprite.y > 318 && sprite.y < 328)
+      x = 19
+
+
+    if (x != undefined) {
+      resolve(x);
+    }
+
+  });
+  promise.then((x) => {
+    document.getElementById("curr").innerHTML = fileData[x].absPath;
+  })
+
 }
