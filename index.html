@@ -6,8 +6,8 @@
 		<title>fileCity v0.0.1</title>
 		<style>
 			/* body {margin: 0; background-color:black!important} */
-			body {margin: 0}
-			canvas {width: 100%; height: 90%}
+			body {margin: 0!important; padding: 0; background-color:black!important}
+			canvas {width: 100%; height: 90%;}
 
 		</style>
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -16,7 +16,7 @@
 		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 	</head>
 	<body>
-		<div id="game-container" class="col">
+		<div id="game-container" class="col px-0">
 		
 		</div>
 		<div id="file-container"class="container mt-5">
@@ -39,24 +39,73 @@
 							<td id="curr" colspan="2"></td>
 							</tr>
 						<tr>
-							<th scope="row">Construct: </th>
-							<td><input type="text" class="form-controls" id="name" placeholder="File/Directory Name"></td>
-							<td> <button type="button" class="btn btn-success mx-2">Create New File</button></td>
+							<th scope="row">Construct File: </th>
+							<td><input type="text" class="form-controls" id="fileName" placeholder="File Name"></td>
+							<td> <button type="button" class="btn btn-success mx-2" id="fileBtn" onclick="constructFile()">Create New File</button></td>
 						  </tr>
 						  <tr>
-							<th scope="row">3</th>
-							<td colspan="2">Larry the Bird</td>
+							<th scope="row">Construct Directory: </th>
+							<td><input type="text" class="form-controls" id="dirName" placeholder="Directory Name"></td>
+							<td><button type="button" class="btn btn-primary mx-2" id="dirBtn" onclick="constructDir()">Create New Directory</button></td>
 						  </tr>
 						</tbody>
 					  </table>
-					  <div class = row>
-					  <button type="button" class="btn btn-danger mx-2">Delete File</button>
+					  <div class = "row">
+
+							<div class = "col">
+								<button type="button" class="btn btn-light" onclick="openF()">Open File</button>
+						</div>
+							<div class = "col">
+									<button type="button" class="btn btn-danger" onclick="destroyFile()">Delete</button>
+							</div>
+							<div class = "col">
+									<button type="button" class="btn btn-info" onclick="showInfo()">Get Info</button>
+							</div>
+							<div class = "col">
+									<button type="button" class="btn btn-warning" onclick="moveF()">Move File</button>
+							</div>
+							<div class = "col">
+									<button type="button" class="btn btn-dark" onclick="copyF()">Copy File</button>
+							</div>
 					</div>
 		</div>	
 		<script> const {remote} = require ("electron"); </script>
 		<script src = './app/phaser.js'></script>
 		<script type="text/javascript" src="./app/fileManagement.js"></script>
 		<script type="text/javascript" src="./game.js"></script>
+		<script>
+			function openF() {
+				openFile(currentObj.name);
+			}
+			function constructFile() {
+				let name = document.getElementById("fileName").value;
+				createFile(name);
+				document.getElementById('fileName').value = ''
+			}
+
+			function constructDir() {
+				let name = document.getElementById("dirName").value;
+				createDirectory(name);
+				document.getElementById('dirName').value = ''
+			}
+
+			function destroyFile() {
+				removeFile(currentObj.name);
+			}
+
+			function showInfo() {
+				if(currentObj !== undefined)
+					window.alert(`Name: ${currentObj.name}\nFile Size: ${formatBytes(currentObj.size)}\nCreation Time: ${currentObj.cTime}\nModification Time: ${currentObj.modTime}\nAbsolute Path: ${currentObj.absPath}\n`);
+			}
+
+			function copyF() {
+				copyFile(currentObj.name);
+			}
+
+			function moveF() {
+				moveFile(currentObj.name);
+			}
+			</script>
 		
 	</body>
 </html>

@@ -5,24 +5,6 @@
 // const { dialog } = require('electron').remote;
 const { ipcRenderer } = require('electron');
 
-function formatBytes(bytes, decimals = 2) {
-  if (bytes === 0) return '0 Bytes';
-
-  const kb = 1024;
-  let dm;
-
-  if (decimals < 0)
-      dm = 0;
-  else 
-    dm = decimals
-
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-
-  const i = Math.floor(Math.log(bytes) / Math.log(kb));
-
-  return parseFloat((bytes / Math.pow(kb, i)).toFixed(dm)) + ' ' + sizes[i];
-}
-
 const config = {
     type: Phaser.AUTO, // Which renderer to use
     width: 620, // Canvas width in pixels
@@ -80,7 +62,7 @@ function create() {
     tileset = map.addTilesetImage("tiles");
     layer = map.createDynamicLayer(0, tileset, 0, 0); // layer index, tileset, x, y
     sprite = this.physics.add.sprite(25, 130, 'car');
-    changeDir = false;
+    refreshScene = false;
  
     
     // Scale the car sprite down
@@ -188,7 +170,7 @@ function create() {
 
     layer.setTileIndexCallback(28, () => {
       clearInterval(timer);
-      if(changeDir === false && overlapTriggered === false) {
+      if(refreshScene === false && overlapTriggered === false) {
         overlapTriggered = true;
         selectDirectory();
         // var promise1 = new Promise(function(resolve, reject) {
@@ -232,14 +214,11 @@ function create() {
     this.input.keyboard.on('keydown_C', function (event) {
         showDebug = !showDebug;
         drawDebug();
-    });
-
- 
-    
+    });  
 }
 
 function update() {
-  if(changeDir === true) {
+  if(refreshScene === true) {
     overlapTriggered = false; 
     this.scene.restart();
   }
@@ -358,6 +337,7 @@ function getCurrent(sprite, building) {
 
   });
   promise.then((x) => {
+    currentObj = fileData[x];
     document.getElementById("curr").innerHTML = fileData[x].absPath;
   })
 

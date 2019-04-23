@@ -18,10 +18,29 @@ const { dialog } = require('electron').remote
 /// Global Variables ///
 ////////////////////////
 
-let changeDir = false;
+let refreshScene = false;
+let currentObj;
 let currentWorkingDirectory = process.cwd();
 document.getElementById("dir").innerHTML = process.cwd();
 
+// Formats bytes into respective file sizes
+function formatBytes(bytes, decimals = 2) {
+  if (bytes === 0) return '0 Bytes';
+
+  const kb = 1024;
+  let dm;
+
+  if (decimals < 0)
+      dm = 0;
+  else 
+    dm = decimals
+
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+  const i = Math.floor(Math.log(bytes) / Math.log(kb));
+
+  return parseFloat((bytes / Math.pow(kb, i)).toFixed(dm)) + ' ' + sizes[i];
+}
 
 // Gets list of file and directory names
 function getFileList() {
@@ -40,7 +59,7 @@ function changeDirectory(dirName) {
   currentWorkingDirectory = process.cwd();
   document.getElementById("dir").innerHTML = process.cwd();
   console.log(currentWorkingDirectory);
-  changeDir = true;
+  refreshScene = true;
 }
 
 // Allows user to select a directory to change to
@@ -80,8 +99,11 @@ function createFile(fileName) {
   fs.open(fileName, 'wx', (err, fd) => {
     if (err)
       console.log(`${fileName} already exists`);
-    else
+    else {
       console.log('File successfully written!')
+      refreshScene = true;
+    }
+
   });
 
 }
@@ -95,6 +117,7 @@ function removeFile(fileName) {
       return;
     }
     console.log('File deleted successfully!')
+    refreshScene = true;
   }
   );
 }
@@ -107,6 +130,7 @@ function createDirectory(dirName) {
   else if (!fs.existsSync(dirName)) {
     fs.mkdirSync(dirName);
     console.log(`The directory ${dirName} has been created!`)
+    refreshScene = true;
   }
 }
 
@@ -145,7 +169,9 @@ function copyFile(fileName) {
   dialog.showOpenDialog(options, (destination) => {
     let dstPath = path.join(destination[0], fileName)
     fs.copy(srcPath, dstPath)
-      .then(() => window.alert(`The file ${fileName} has been successfully copied!`))
+      .then(() => {
+        window.alert(`The file ${fileName} has been successfully copied!`)
+        refreshScene = true;})
       .catch(err => window.alert(err))
   })
 }
@@ -173,7 +199,10 @@ function moveFile(fileName) {
   dialog.showOpenDialog(options, (destination) => {
     let dstPath = path.join(destination[0], fileName)
     fs.move(srcPath, dstPath)
-      .then(() => window.alert(`The file ${fileName} has been successfully moved!`))
+      .then(() => {
+        window.alert(`The file ${fileName} has been successfully moved!`)
+        refreshScene = true;
+      })
       .catch(err => window.alert(err))
   })
 }
@@ -183,5 +212,4 @@ function fileInfo(fileName) {
   let filePath = path.join(currentWorkingDirectory, fileName)
   const statObj = fs.statSync(filePath)
   return statObj;
-  // window.alert(statObj.size);
 }
