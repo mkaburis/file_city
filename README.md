@@ -2,6 +2,9 @@
 
 ##### Designed by Mihail Kaburis for CIS 4930 Advanced JavaScript at USF Tampa (Spring 2019)
 
+
+![CityMap](/images/filecity.png)
+
 ## Getting Started
 The FileCity folder contains all necessary files (aside from the dependencies)
 

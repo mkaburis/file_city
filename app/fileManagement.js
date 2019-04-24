@@ -25,6 +25,9 @@ let currentWorkingDirectory = process.cwd();
 document.getElementById("dir").innerHTML = process.cwd();
 
 // Formats bytes into respective file sizes
+// Source: https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
+// Some modifications were made for the purposes of this project
+
 function formatBytes(bytes, decimals = 2) {
   if (bytes === 0) return '0 Bytes';
 

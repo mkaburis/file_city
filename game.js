@@ -1,10 +1,4 @@
-
-// module.import = { getFileList: 'app/fileManagement.js' }
-// const {getFileList, fileInfo} = require('./app/fileManagement.js');
-                  
-// const { dialog } = require('electron').remote;
-// const { ipcRenderer } = require('electron');
-
+// Configure our phaser game
 const config = {
     type: Phaser.AUTO, // Which renderer to use
     width: 620, // Canvas width in pixels
@@ -15,7 +9,7 @@ const config = {
       default: 'arcade',
       arcade: {
           gravity: 0,
-          debug: true
+          debug: false
       }
   },
     scene: {
@@ -42,20 +36,22 @@ const config = {
   let layer;
   let overlapTriggered = false;
 
+
+// Timer for directory selection
   let timer = setInterval(()=> {
     overlapTriggered = false;
   }, 3000)
   
 
+// Global variables for phaser!
   let cursors;
   let sprite;
   let debugGraphics;
   let showDebug = false;
-  let helpText;
   let building =[];
   let fileData = [];
 
-
+// Create our phaser scene for the city
 function create() {
   //Load in the tilemap, cityCSV
     map = this.make.tilemap({ key: "citymap", tileWidth: 8, tileHeight: 8});
@@ -72,10 +68,9 @@ function create() {
     // Set up camera to follow car sprite
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     this.cameras.main.startFollow(sprite);
-
-
-    // this.cameras.main.setZoom(2);
-    // Set collision bounds at edge of our city world
+    this.cameras.main.setZoom(2);
+    
+     // Set collision bounds at edge of our city world
     sprite.setCollideWorldBounds(true);
 
     //////////////////////////////////////////
@@ -107,8 +102,6 @@ function create() {
           cTime: fileObj.birthtime,
           modTime: fileObj.mtime,
           absPath: absolute };
-        console.log(fileData[i]);
-        
       }
       else {
         building[i] = this.add.sprite(x, y, 'dirBuilding').setInteractive()
@@ -120,7 +113,6 @@ function create() {
           cTime: fileObj.birthtime,
           modTime: fileObj.mtime,
           absPath: absolute };
-        console.log(fileData[i]);
       }
 
       this.add.text(x-25, y-10, formatBytes(fileObj.size), {
@@ -168,18 +160,12 @@ function create() {
     }, this);
 
 
+    // Set up collissions with the parking lot and building sprites!
     layer.setTileIndexCallback(28, () => {
       clearInterval(timer);
       if(refreshScene === false && overlapTriggered === false) {
         overlapTriggered = true;
         selectDirectory();
-        // var promise1 = new Promise(function(resolve, reject) {
-          // let x = selectDirectory()
-          // resolve(x);
-        // });
-        // promise1.then(function(dir) {
-        //   console.log(dir)
-        // });
       }
     } );
 
@@ -266,13 +252,6 @@ function drawDebug ()
         });
     }
 
-    helpText.setText(getHelpMessage());
-}
-
-function getHelpMessage ()
-{
-    return 'Arrow keys to move.' +
-        '\nPress "C" to toggle debug visuals: ' + (showDebug ? 'on' : 'off');
 }
 
 function getCurrent(sprite, building) {
