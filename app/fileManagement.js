@@ -11,7 +11,8 @@
 
 const fs = require('fs-extra');
 const path = require('path');
-const { dialog } = require('electron').remote
+const { dialog } = require('electron').remote;
+const { shell } = require('electron');
 
 
 //////////////////////////
@@ -31,8 +32,8 @@ function formatBytes(bytes, decimals = 2) {
   let dm;
 
   if (decimals < 0)
-      dm = 0;
-  else 
+    dm = 0;
+  else
     dm = decimals
 
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
@@ -77,7 +78,7 @@ function selectDirectory() {
 
     properties: ['openDirectory']
   }
-   dialog.showOpenDialog(options, (destination) => {
+  dialog.showOpenDialog(options, (destination) => {
     console.log(destination)
 
     if (destination === undefined) {
@@ -171,7 +172,8 @@ function copyFile(fileName) {
     fs.copy(srcPath, dstPath)
       .then(() => {
         window.alert(`The file ${fileName} has been successfully copied!`)
-        refreshScene = true;})
+        refreshScene = true;
+      })
       .catch(err => window.alert(err))
   })
 }
@@ -212,4 +214,15 @@ function fileInfo(fileName) {
   let filePath = path.join(currentWorkingDirectory, fileName)
   const statObj = fs.statSync(filePath)
   return statObj;
+}
+
+
+// Opens a file for the user
+function openFile(fileName) {
+  let filePath = path.join(currentWorkingDirectory, fileName)
+  if (path.extname(filePath) != '')
+    shell.openItem(filePath);
+
+  else
+    window.alert("You can only open files with this command!");
 }

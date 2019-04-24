@@ -3,7 +3,7 @@
 // const {getFileList, fileInfo} = require('./app/fileManagement.js');
                   
 // const { dialog } = require('electron').remote;
-const { ipcRenderer } = require('electron');
+// const { ipcRenderer } = require('electron');
 
 const config = {
     type: Phaser.AUTO, // Which renderer to use
